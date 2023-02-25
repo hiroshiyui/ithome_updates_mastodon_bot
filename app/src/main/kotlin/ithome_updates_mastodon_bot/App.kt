@@ -3,6 +3,10 @@
  */
 package ithome_updates_mastodon_bot
 
+import org.http4k.client.JettyClient
+import org.http4k.core.Method
+import org.http4k.core.Request
+
 class App {
     val greeting: String
         get() {
@@ -12,4 +16,8 @@ class App {
 
 fun main() {
     println(App().greeting)
+
+    val client = JettyClient()
+    val request = Request(Method.GET, "https://www.ithome.com.tw/rss")
+    println(client(request))
 }
