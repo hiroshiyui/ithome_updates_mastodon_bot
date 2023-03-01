@@ -41,6 +41,9 @@ dependencies {
     implementation("org.http4k:http4k-core")
     implementation("org.http4k:http4k-server-jetty")
     implementation("org.http4k:http4k-client-jetty")
+
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-nop
+    implementation("org.slf4j:slf4j-nop:2.0.6")
 }
 
 kotlin {

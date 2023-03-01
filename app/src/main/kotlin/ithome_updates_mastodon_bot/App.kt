@@ -5,7 +5,7 @@ package ithome_updates_mastodon_bot
 
 import org.w3c.dom.Element
 import org.w3c.dom.Node
-import kotlin.system.exitProcess
+import java.util.logging.Logger
 
 class App {
     val greeting: String
@@ -15,9 +15,14 @@ class App {
 }
 
 fun main() {
+    val logger: Logger = Logger.getAnonymousLogger()
+    logger.info("Starting ithome_updates_mastodon_bot...")
+
     println(App().greeting)
     println(RssFeedsFetcher().getRssBody())
     val rssFeedsItems = RssFeedsFetcher().getRssFeedsItems()
+    logger.info("RSS feeds have ${rssFeedsItems.length} items.")
+
     repeat(rssFeedsItems.length) {
         val itemNode: Node = rssFeedsItems.item(it)
         val element: Element = itemNode as Element
@@ -26,6 +31,4 @@ fun main() {
         println(element.getElementsByTagName("description").item(0).textContent.trim())
         println(element.getElementsByTagName("link").item(0).textContent)
     }
-
-    exitProcess(0)
 }
