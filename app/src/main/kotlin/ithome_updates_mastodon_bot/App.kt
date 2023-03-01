@@ -3,11 +3,11 @@
  */
 package ithome_updates_mastodon_bot
 
-import org.w3c.dom.Element
 import org.w3c.dom.Node
 import java.util.logging.Logger
 
 class App {
+    val logger: Logger = Logger.getLogger(this.javaClass.name)
     val greeting: String
         get() {
             return "Hello World!"
@@ -15,20 +15,21 @@ class App {
 }
 
 fun main() {
-    val logger: Logger = Logger.getAnonymousLogger()
+    val logger: Logger = App().logger
     logger.info("Starting ithome_updates_mastodon_bot...")
 
     println(App().greeting)
-    println(RssFeedsFetcher().getRssBody())
-    val rssFeedsItems = RssFeedsFetcher().getRssFeedsItems()
-    logger.info("RSS feeds have ${rssFeedsItems.length} items.")
 
-    repeat(rssFeedsItems.length) {
-        val itemNode: Node = rssFeedsItems.item(it)
-        val element: Element = itemNode as Element
+    val rssFeeds = RssFeeds("https://www.ithome.com.tw/rss")
+    println(rssFeeds.source())
+    logger.info("RSS feeds '${rssFeeds.title()}' has ${rssFeeds.items().length} items.")
+
+    repeat(rssFeeds.items().length) { entry ->
+        val itemNode: Node = rssFeeds.items().item(entry)
+        val item = RssFeedsItem(itemNode)
         println("---")
-        println(element.getElementsByTagName("title").item(0).textContent.trim())
-        println(element.getElementsByTagName("description").item(0).textContent.trim())
-        println(element.getElementsByTagName("link").item(0).textContent)
+        println(item.title())
+        println(item.description())
+        println(item.link())
     }
 }
