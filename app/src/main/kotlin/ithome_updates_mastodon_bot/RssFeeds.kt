@@ -52,9 +52,17 @@ class RssFeeds(rssFeedsUrl: String) {
     }
 
     fun saveItem(item: RssFeedsItem, sqliteDb: SqliteDb) {
-        sqliteDb.statement.executeUpdate("""
+        val preparedStatement = sqliteDb.statement.connection.prepareStatement("""
             INSERT OR IGNORE INTO rss_feeds_items (channel, title, description, link, guid, post_status)
-                VALUES("${title()}", "${item.title()}", "${item.description()}", "${item.link()}", "${item.guid()}", "${PostStatus.QUEUED.status}")
+                VALUES(?, ?, ?, ?, ?, ?)
         """.trimIndent())
+
+        preparedStatement.setString(1, title())
+        preparedStatement.setString(2, item.title())
+        preparedStatement.setString(3, item.description())
+        preparedStatement.setString(4, item.link())
+        preparedStatement.setString(5, item.guid())
+        preparedStatement.setInt(6, PostStatus.QUEUED.status)
+        preparedStatement.executeUpdate()
     }
 }
