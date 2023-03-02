@@ -23,6 +23,13 @@ class RssFeeds(rssFeedsUrl: String) {
     private val documentBuilderFactory: DocumentBuilderFactory = DocumentBuilderFactory.newInstance()
     private val xPath: XPath = XPathFactory.newInstance().newXPath()
 
+    enum class PostStatus(val status: Int) {
+        QUEUED(0),
+        POSTING(1),
+        DONE(2),
+        FAILED(3)
+    }
+
     init {
         documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true)
         val documentBuilder = documentBuilderFactory.newDocumentBuilder()
@@ -42,5 +49,12 @@ class RssFeeds(rssFeedsUrl: String) {
         val titleXPath = "//channel/title"
         val titleNode: Node = xPath.compile(titleXPath).evaluate(document, XPathConstants.NODE) as Node
         return titleNode.textContent.trim()
+    }
+
+    fun saveItem(item: RssFeedsItem, sqliteDb: SqliteDb) {
+        sqliteDb.statement.executeUpdate("""
+            INSERT OR IGNORE INTO rss_feeds_items (channel, title, description, link, guid, post_status)
+                VALUES("${title()}", "${item.title()}", "${item.description()}", "${item.link()}", "${item.guid()}", "${PostStatus.QUEUED.status}")
+        """.trimIndent())
     }
 }

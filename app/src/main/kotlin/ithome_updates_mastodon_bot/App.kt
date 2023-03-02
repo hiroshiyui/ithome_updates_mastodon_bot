@@ -8,6 +8,7 @@ import java.util.logging.Logger
 
 class App {
     val logger: Logger = Logger.getLogger(this.javaClass.name)
+
     val greeting: String
         get() {
             return "Hello World!"
@@ -15,10 +16,13 @@ class App {
 }
 
 fun main() {
-    val logger: Logger = App().logger
+    val app = App()
+    val logger = app.logger
+    val sqliteDb = SqliteDb()
+
     logger.info("Starting ithome_updates_mastodon_bot...")
 
-    println(App().greeting)
+    println(app.greeting)
 
     val rssFeeds = RssFeeds("https://www.ithome.com.tw/rss")
     println(rssFeeds.source())
@@ -31,5 +35,8 @@ fun main() {
         println(item.title())
         println(item.description())
         println(item.link())
+        rssFeeds.saveItem(item, sqliteDb)
     }
+
+    sqliteDb.close()
 }

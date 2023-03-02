@@ -17,4 +17,8 @@ class RssFeedsItem(node: Node) {
     fun link(): String {
         return item.getElementsByTagName("link").item(0).textContent.trim()
     }
+
+    fun guid(): String {
+        return item.getElementsByTagName("guid").item(0).textContent.trim()
+    }
 }
