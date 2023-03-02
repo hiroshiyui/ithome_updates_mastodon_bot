@@ -15,7 +15,7 @@ class SqliteDb {
         statement.queryTimeout = 10
         // create database table for RSS Feeds items
         statement.executeUpdate(
-        """
+            """
             CREATE TABLE IF NOT EXISTS rss_feeds_items
                 (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
