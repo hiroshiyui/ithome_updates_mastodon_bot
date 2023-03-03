@@ -18,11 +18,12 @@
 
 package ithome_updates_mastodon_bot
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.w3c.dom.Node
-import java.util.logging.Logger
 
 class App {
-    val logger: Logger = Logger.getLogger(this.javaClass.name)
+    val logger: Logger = LoggerFactory.getLogger(this.javaClass.name)
 
     val greeting: String
         get() {
@@ -36,7 +37,6 @@ fun main() {
     val sqliteDb = SqliteDb()
 
     logger.info("Starting ithome_updates_mastodon_bot...")
-
     println(app.greeting)
 
     val rssFeeds = RssFeeds("https://www.ithome.com.tw/rss")

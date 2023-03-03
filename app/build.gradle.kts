@@ -60,8 +60,10 @@ dependencies {
     implementation("org.http4k:http4k-server-jetty")
     implementation("org.http4k:http4k-client-jetty")
 
-    // https://mvnrepository.com/artifact/org.slf4j/slf4j-nop
-    implementation("org.slf4j:slf4j-nop:2.0.6")
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
+    implementation("org.slf4j:slf4j-api:2.0.6")
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-jdk14
+    implementation("org.slf4j:slf4j-jdk14:2.0.6")
 
     // https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc
     implementation("org.xerial:sqlite-jdbc:3.41.0.0")
