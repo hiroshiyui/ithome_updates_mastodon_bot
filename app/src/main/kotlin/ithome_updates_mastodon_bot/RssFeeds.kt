@@ -22,6 +22,8 @@ package ithome_updates_mastodon_bot
 import org.http4k.client.JettyClient
 import org.http4k.core.Method
 import org.http4k.core.Request
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.w3c.dom.Document
 import org.w3c.dom.Node
 import org.w3c.dom.NodeList
@@ -41,6 +43,7 @@ class RssFeeds(rssFeedsUrl: String) {
     private var document: Document
     private val documentBuilderFactory: DocumentBuilderFactory = DocumentBuilderFactory.newInstance()
     private val xPath: XPath = XPathFactory.newInstance().newXPath()
+    private val logger: Logger = LoggerFactory.getLogger(this.javaClass.name)
 
     enum class PostStatus(val status: Int) {
         QUEUED(0),
@@ -70,7 +73,7 @@ class RssFeeds(rssFeedsUrl: String) {
         return titleNode.textContent.trim()
     }
 
-    fun saveItem(item: RssFeedsItem, sqliteDb: SqliteDb) {
+    private fun saveItem(item: RssFeedsItem, sqliteDb: SqliteDb) {
         val preparedStatement = sqliteDb.statement.connection.prepareStatement(
             """
             INSERT OR IGNORE INTO rss_feeds_items (channel, title, description, link, guid, post_status)
@@ -85,5 +88,18 @@ class RssFeeds(rssFeedsUrl: String) {
         preparedStatement.setString(5, item.guid())
         preparedStatement.setInt(6, PostStatus.QUEUED.status)
         preparedStatement.executeUpdate()
+    }
+
+    fun updateDb() {
+        val sqliteDb = SqliteDb()
+
+        repeat(this.items().length) { entry ->
+            val itemNode: Node = this.items().item(entry)
+            val item = RssFeedsItem(itemNode)
+            logger.info("Importing item: '${item.title()}'")
+            saveItem(item, sqliteDb)
+        }
+
+        sqliteDb.close()
     }
 }

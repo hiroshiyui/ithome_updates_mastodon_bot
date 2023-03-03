@@ -18,12 +18,35 @@
 
 package ithome_updates_mastodon_bot
 
+import ithome_updates_mastodon_bot.scheduler_jobs.UpdateRssFeedsDbJob
+import org.quartz.*
+import org.quartz.impl.StdSchedulerFactory
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.w3c.dom.Node
 
 class App {
     val logger: Logger = LoggerFactory.getLogger(this.javaClass.name)
+    private val scheduler: Scheduler = StdSchedulerFactory.getDefaultScheduler()
+
+    init {
+        scheduler.start()
+    }
+
+    fun registerScheduleUpdateRssFeedsDbJob(rssFeedsUrl: String, identity: String) {
+        val updateRssFeedsDbJob: JobDetail = JobBuilder.newJob(UpdateRssFeedsDbJob::class.java)
+            .withIdentity("updateRssFeedsDbJob_${identity}", "defaultGroup")
+            .usingJobData("rssFeedsUrl", rssFeedsUrl)
+            .build()
+        val updateRssFeedsDbJobTrigger: Trigger = TriggerBuilder.newTrigger()
+            .withIdentity("updateRssFeedsDbJobTrigger_${identity}", "defaultGroup")
+            .startNow()
+            .withSchedule(
+                SimpleScheduleBuilder.simpleSchedule()
+                    .withIntervalInMinutes(10).repeatForever()
+            )
+            .build()
+        scheduler.scheduleJob(updateRssFeedsDbJob, updateRssFeedsDbJobTrigger)
+    }
 
     val greeting: String
         get() {
@@ -33,25 +56,9 @@ class App {
 
 fun main() {
     val app = App()
-    val logger = app.logger
-    val sqliteDb = SqliteDb()
 
-    logger.info("Starting ithome_updates_mastodon_bot...")
+    app.logger.info("Starting ithome_updates_mastodon_bot...")
     println(app.greeting)
 
-    val rssFeeds = RssFeeds("https://www.ithome.com.tw/rss")
-    println(rssFeeds.source())
-    logger.info("RSS feeds '${rssFeeds.title()}' has ${rssFeeds.items().length} items.")
-
-    repeat(rssFeeds.items().length) { entry ->
-        val itemNode: Node = rssFeeds.items().item(entry)
-        val item = RssFeedsItem(itemNode)
-        println("---")
-        println(item.title())
-        println(item.description())
-        println(item.link())
-        rssFeeds.saveItem(item, sqliteDb)
-    }
-
-    sqliteDb.close()
+    app.registerScheduleUpdateRssFeedsDbJob("https://www.ithome.com.tw/rss", "ithome")
 }
