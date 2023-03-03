@@ -19,11 +19,10 @@
 
 package ithome_updates_mastodon_bot
 
+import ithome_updates_mastodon_bot.helpers.LoggerHelper
 import org.http4k.client.JettyClient
 import org.http4k.core.Method
 import org.http4k.core.Request
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import org.w3c.dom.Document
 import org.w3c.dom.Node
 import org.w3c.dom.NodeList
@@ -35,7 +34,7 @@ import javax.xml.xpath.XPath
 import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
 
-class RssFeeds(rssFeedsUrl: String) {
+class RssFeeds(rssFeedsUrl: String) : LoggerHelper {
     private val client = JettyClient()
     private val request = Request(Method.GET, rssFeedsUrl)
     private val bodyString: String = client(request).bodyString()
@@ -43,7 +42,6 @@ class RssFeeds(rssFeedsUrl: String) {
     private var document: Document
     private val documentBuilderFactory: DocumentBuilderFactory = DocumentBuilderFactory.newInstance()
     private val xPath: XPath = XPathFactory.newInstance().newXPath()
-    private val logger: Logger = LoggerFactory.getLogger(this.javaClass.name)
 
     enum class PostStatus(val status: Int) {
         QUEUED(0),

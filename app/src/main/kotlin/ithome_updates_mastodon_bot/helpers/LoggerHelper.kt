@@ -16,20 +16,12 @@
  * Foobar. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package ithome_updates_mastodon_bot.scheduler_jobs
+package ithome_updates_mastodon_bot.helpers
 
-import ithome_updates_mastodon_bot.RssFeeds
-import ithome_updates_mastodon_bot.helpers.LoggerHelper
-import org.quartz.Job
-import org.quartz.JobDataMap
-import org.quartz.JobExecutionContext
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-class UpdateRssFeedsDbJob : Job, LoggerHelper {
-    override fun execute(context: JobExecutionContext) {
-        val data: JobDataMap = context.mergedJobDataMap
-        val rssFeedsUrl: String = data.getString("rssFeedsUrl")
-        val rssFeeds = RssFeeds(rssFeedsUrl)
-        logger.info("RSS feeds '${rssFeeds.title()}' has ${rssFeeds.items().length} items.")
-        rssFeeds.updateDb()
-    }
+interface LoggerHelper {
+    val logger: Logger
+        get() = LoggerFactory.getLogger(this.javaClass.name)
 }

@@ -18,14 +18,12 @@
 
 package ithome_updates_mastodon_bot
 
+import ithome_updates_mastodon_bot.helpers.LoggerHelper
 import ithome_updates_mastodon_bot.scheduler_jobs.UpdateRssFeedsDbJob
 import org.quartz.*
 import org.quartz.impl.StdSchedulerFactory
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
-class App {
-    val logger: Logger = LoggerFactory.getLogger(this.javaClass.name)
+class App : LoggerHelper {
     private val scheduler: Scheduler = StdSchedulerFactory.getDefaultScheduler()
 
     init {

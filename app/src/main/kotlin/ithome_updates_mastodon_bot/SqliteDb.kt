@@ -18,15 +18,13 @@
 
 package ithome_updates_mastodon_bot
 
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import ithome_updates_mastodon_bot.helpers.LoggerHelper
 import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.Statement
 
-class SqliteDb {
+class SqliteDb : LoggerHelper {
     private var connection: Connection = DriverManager.getConnection("jdbc:sqlite:rssfeeds.db")
-    private val logger: Logger = LoggerFactory.getLogger(this.javaClass.name)
     val statement: Statement = connection.createStatement()
 
     init {
