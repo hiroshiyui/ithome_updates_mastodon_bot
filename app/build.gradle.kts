@@ -70,6 +70,11 @@ dependencies {
 
     // https://mvnrepository.com/artifact/org.quartz-scheduler/quartz
     implementation("org.quartz-scheduler:quartz:2.3.2")
+
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-configuration2
+    implementation("org.apache.commons:commons-configuration2:2.8.0")
+    // https://mvnrepository.com/artifact/commons-beanutils/commons-beanutils
+    implementation("commons-beanutils:commons-beanutils:1.9.4")
 }
 
 kotlin {

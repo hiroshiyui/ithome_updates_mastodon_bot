@@ -18,19 +18,33 @@
 
 package ithome_updates_mastodon_bot
 
+import ithome_updates_mastodon_bot.helpers.ConfigHelper
 import ithome_updates_mastodon_bot.helpers.LoggerHelper
 import ithome_updates_mastodon_bot.scheduler_jobs.UpdateRssFeedsDbJob
+import org.apache.commons.configuration2.HierarchicalConfiguration
+import org.apache.commons.configuration2.tree.ImmutableNode
 import org.quartz.*
 import org.quartz.impl.StdSchedulerFactory
 
-class App : LoggerHelper {
+class App : LoggerHelper, ConfigHelper {
     private val scheduler: Scheduler = StdSchedulerFactory.getDefaultScheduler()
 
     init {
         scheduler.start()
     }
 
-    fun registerScheduleUpdateRssFeedsDbJob(rssFeedsUrl: String, identity: String) {
+    fun loadRssFeeds() {
+        config.apply {
+            val rssFeedsChannels: MutableList<HierarchicalConfiguration<ImmutableNode>>? = this.configurationsAt("rssfeeds.channel")
+            rssFeedsChannels?.forEach {
+                val rssFeedsUrl: String = it.getString("url")
+                val identity: String = it.getString("identity")
+                registerScheduleUpdateRssFeedsDbJob(rssFeedsUrl, identity)
+            }
+        }
+    }
+
+    private fun registerScheduleUpdateRssFeedsDbJob(rssFeedsUrl: String, identity: String) {
         val updateRssFeedsDbJob: JobDetail = JobBuilder.newJob(UpdateRssFeedsDbJob::class.java)
             .withIdentity("updateRssFeedsDbJob_${identity}", "defaultGroup")
             .usingJobData("rssFeedsUrl", rssFeedsUrl)
@@ -43,6 +57,7 @@ class App : LoggerHelper {
                     .withIntervalInMinutes(10).repeatForever()
             )
             .build()
+        logger.info("Registering scheduled job 'updateRssFeedsDbJob_${identity}'")
         scheduler.scheduleJob(updateRssFeedsDbJob, updateRssFeedsDbJobTrigger)
     }
 
@@ -58,5 +73,5 @@ fun main() {
     app.logger.info("Starting ithome_updates_mastodon_bot...")
     println(app.greeting)
 
-    app.registerScheduleUpdateRssFeedsDbJob("https://www.ithome.com.tw/rss", "ithome")
+    app.loadRssFeeds()
 }
