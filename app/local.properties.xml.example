@@ -17,6 +17,12 @@
   ~ Foobar. If not, see <https://www.gnu.org/licenses/>.
   -->
 <configuration label="configuration" version="1.0">
+    <mastodon>
+        <!-- Replace instance-url to your Mastodon instance's URL -->
+        <instance-url>https://g0v.social</instance-url>
+        <!-- and use yours access token: -->
+        <access-token>Not+ReAlLy_NWiA2viCya7KBiE6s84XlcGba8tXldLP</access-token>
+    </mastodon>
     <rssfeeds>
         <channel>
             <identity>ithome</identity>
