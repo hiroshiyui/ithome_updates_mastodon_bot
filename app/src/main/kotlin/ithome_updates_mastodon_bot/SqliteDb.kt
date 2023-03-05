@@ -41,7 +41,8 @@ class SqliteDb : LoggerHelper {
                     description TEXT,
                     link TEXT NOT NULL,
                     guid TEXT NOT NULL UNIQUE,
-                    post_status INTEGER NOT NULL
+                    post_status INTEGER NOT NULL,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 );
         """.trimIndent()
         )
