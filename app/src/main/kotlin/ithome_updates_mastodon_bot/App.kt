@@ -20,6 +20,7 @@ package ithome_updates_mastodon_bot
 
 import ithome_updates_mastodon_bot.helpers.ConfigHelper
 import ithome_updates_mastodon_bot.helpers.LoggerHelper
+import ithome_updates_mastodon_bot.scheduler_jobs.PostToMastodonInstanceJob
 import ithome_updates_mastodon_bot.scheduler_jobs.UpdateRssFeedsDbJob
 import org.apache.commons.configuration2.HierarchicalConfiguration
 import org.apache.commons.configuration2.tree.ImmutableNode
@@ -28,6 +29,7 @@ import org.quartz.impl.StdSchedulerFactory
 
 class App : LoggerHelper, ConfigHelper {
     private val scheduler: Scheduler = StdSchedulerFactory.getDefaultScheduler()
+    private val defaultSchedulerGroup: String = "defaultGroup"
 
     init {
         scheduler.start()
@@ -35,28 +37,39 @@ class App : LoggerHelper, ConfigHelper {
 
     fun loadRssFeeds() {
         config.apply {
-            val rssFeedsChannels: MutableList<HierarchicalConfiguration<ImmutableNode>>? = this.configurationsAt("rssfeeds.channel")
+            val rssFeedsChannels: MutableList<HierarchicalConfiguration<ImmutableNode>>? =
+                this.configurationsAt("rssfeeds.channel")
             rssFeedsChannels?.forEach {
                 val rssFeedsUrl: String = it.getString("url")
                 val identity: String = it.getString("identity")
                 registerScheduleUpdateRssFeedsDbJob(rssFeedsUrl, identity)
+                registerSchedulePostToMastodonInstanceJob(identity)
             }
         }
     }
 
+    private fun registerSchedulePostToMastodonInstanceJob(identity: String) {
+        val postToMastodonInstanceJob: JobDetail = JobBuilder.newJob(PostToMastodonInstanceJob::class.java)
+            .withIdentity("postToMastodonInstanceJob_${identity}", defaultSchedulerGroup)
+            .usingJobData("identity", identity).build()
+        val postToMastodonInstanceJobTrigger: Trigger = TriggerBuilder.newTrigger()
+            .withIdentity("postToMastodonInstanceJobTrigger_${identity}", defaultSchedulerGroup).startNow()
+            .withSchedule(
+                SimpleScheduleBuilder.simpleSchedule().withIntervalInMinutes(10).repeatForever()
+            ).build()
+        logger.info("Registering scheduled job 'postToMastodonInstanceJob_${identity}'")
+        scheduler.scheduleJob(postToMastodonInstanceJob, postToMastodonInstanceJobTrigger)
+    }
+
     private fun registerScheduleUpdateRssFeedsDbJob(rssFeedsUrl: String, identity: String) {
         val updateRssFeedsDbJob: JobDetail = JobBuilder.newJob(UpdateRssFeedsDbJob::class.java)
-            .withIdentity("updateRssFeedsDbJob_${identity}", "defaultGroup")
-            .usingJobData("rssFeedsUrl", rssFeedsUrl)
-            .build()
-        val updateRssFeedsDbJobTrigger: Trigger = TriggerBuilder.newTrigger()
-            .withIdentity("updateRssFeedsDbJobTrigger_${identity}", "defaultGroup")
-            .startNow()
-            .withSchedule(
-                SimpleScheduleBuilder.simpleSchedule()
-                    .withIntervalInMinutes(10).repeatForever()
-            )
-            .build()
+            .withIdentity("updateRssFeedsDbJob_${identity}", defaultSchedulerGroup)
+            .usingJobData("rssFeedsUrl", rssFeedsUrl).build()
+        val updateRssFeedsDbJobTrigger: Trigger =
+            TriggerBuilder.newTrigger().withIdentity("updateRssFeedsDbJobTrigger_${identity}", defaultSchedulerGroup)
+                .startNow().withSchedule(
+                    SimpleScheduleBuilder.simpleSchedule().withIntervalInMinutes(10).repeatForever()
+                ).build()
         logger.info("Registering scheduled job 'updateRssFeedsDbJob_${identity}'")
         scheduler.scheduleJob(updateRssFeedsDbJob, updateRssFeedsDbJobTrigger)
     }
