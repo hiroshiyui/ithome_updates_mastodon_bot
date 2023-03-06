@@ -26,10 +26,10 @@ import org.quartz.JobExecutionContext
 
 class UpdateRssFeedsDbJob : Job, LoggerHelper {
     override fun execute(context: JobExecutionContext) {
+        logger.info("Running UpdateRssFeedsDbJob...")
         val data: JobDataMap = context.mergedJobDataMap
         val rssFeedsUrl: String = data.getString("rssFeedsUrl")
         val rssFeeds = RssFeeds(rssFeedsUrl)
-        logger.info("RSS feeds '${rssFeeds.title()}' has ${rssFeeds.items().length} items.")
         rssFeeds.updateDb()
     }
 }

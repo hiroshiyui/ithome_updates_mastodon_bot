@@ -34,6 +34,7 @@ class PostToMastodonInstanceJob : Job, LoggerHelper, ConfigHelper {
     private val sqliteDb = SqliteDb()
 
     override fun execute(context: JobExecutionContext?) {
+        logger.info("Running PostToMastodonInstanceJob...")
         getPendingItemsFromDb()?.apply {
             while (this.next()) {
                 postToMastodonInstance(this)
