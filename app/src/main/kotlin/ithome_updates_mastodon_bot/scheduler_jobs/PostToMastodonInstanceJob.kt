@@ -35,10 +35,15 @@ class PostToMastodonInstanceJob : Job, LoggerHelper, ConfigHelper {
 
     override fun execute(context: JobExecutionContext?) {
         logger.info("Running PostToMastodonInstanceJob...")
-        getPendingItemsFromDb()?.apply {
+        getRandomSinglePendingItemFromDb()?.apply {
             while (this.next()) {
-                postToMastodonInstance(this)
-                updateItemAsDoneToDb(this)
+                val postResult: Boolean = postToMastodonInstance(this)
+
+                if (postResult) {
+                    updateItemAsStatusToDb(this, RssFeeds.PostStatus.DONE)
+                } else {
+                    updateItemAsStatusToDb(this, RssFeeds.PostStatus.FAILED)
+                }
             }
         }
 
@@ -59,20 +64,32 @@ class PostToMastodonInstanceJob : Job, LoggerHelper, ConfigHelper {
             )
             .form("status", statusContent)
 
-        client(request)
+        val requestCall = client(request)
         client.close()
 
-        return true
+        return requestCall.status.successful
     }
 
-    private fun updateItemAsDoneToDb(resultSet: ResultSet): Boolean {
+    private fun updateItemAsStatusToDb(resultSet: ResultSet, postStatus: RssFeeds.PostStatus): Boolean {
         val preparedStatement =
             sqliteDb.statement.connection.prepareStatement("UPDATE rss_feeds_items SET post_status = ? WHERE id = ?;")
-        preparedStatement.setInt(1, RssFeeds.PostStatus.DONE.status)
+        preparedStatement.setInt(1, postStatus.status)
         preparedStatement.setInt(2, resultSet.getInt("id"))
         preparedStatement.executeUpdate()
 
         return true
+    }
+
+    private fun getRandomSinglePendingItemFromDb(): ResultSet? {
+        val preparedStatement = sqliteDb.statement.connection.prepareStatement(
+            """
+            SELECT * FROM rss_feeds_items WHERE post_status = ? OR post_status = ? ORDER BY RANDOM() LIMIT 1;
+            """.trimIndent()
+        )
+
+        preparedStatement.setInt(1, RssFeeds.PostStatus.QUEUED.status)
+        preparedStatement.setInt(2, RssFeeds.PostStatus.FAILED.status)
+        return preparedStatement.executeQuery()
     }
 
     private fun getPendingItemsFromDb(): ResultSet? {
