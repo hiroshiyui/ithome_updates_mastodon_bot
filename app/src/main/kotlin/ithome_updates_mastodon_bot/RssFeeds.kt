@@ -93,7 +93,6 @@ class RssFeeds(rssFeedsUrl: String) : LoggerHelper {
         repeat(this.items().length) { entry ->
             val itemNode: Node = this.items().item(entry)
             val item = RssFeedsItem(itemNode)
-            logger.info("Importing item: '${item.title()}'")
             saveItem(item, sqliteDb)
         }
 
