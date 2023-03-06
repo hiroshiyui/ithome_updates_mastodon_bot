@@ -18,13 +18,71 @@
 
 package ithome_updates_mastodon_bot.scheduler_jobs
 
+import ithome_updates_mastodon_bot.RssFeeds
+import ithome_updates_mastodon_bot.SqliteDb
+import ithome_updates_mastodon_bot.helpers.ConfigHelper
 import ithome_updates_mastodon_bot.helpers.LoggerHelper
+import org.http4k.client.JettyClient
+import org.http4k.core.Method
+import org.http4k.core.Request
+import org.http4k.core.body.form
 import org.quartz.Job
 import org.quartz.JobExecutionContext
+import java.sql.ResultSet
 
-class PostToMastodonInstanceJob : Job, LoggerHelper {
+class PostToMastodonInstanceJob : Job, LoggerHelper, ConfigHelper {
+    private val sqliteDb = SqliteDb()
+
     override fun execute(context: JobExecutionContext?) {
-        TODO("Not yet implemented")
+        getPendingItemsFromDb()?.apply {
+            while (this.next()) {
+                postToMastodonInstance(this)
+                updateItemAsDoneToDb(this)
+            }
+        }
+
+        sqliteDb.statement.close()
+        sqliteDb.close()
     }
 
+    private fun postToMastodonInstance(resultSet: ResultSet): Boolean {
+        val client = JettyClient()
+        val postStatusApiEndpoint = "${config.getString("mastodon.instance-url")}/api/v1/statuses"
+        val statusContent =
+            "〈${resultSet.getString("title")}〉\n\n${resultSet.getString("description")}\n${resultSet.getString("link")}".trim()
+        val request = Request(Method.POST, postStatusApiEndpoint)
+            .header("Content-Type", "multipart/form-data")
+            .header(
+                "Authorization",
+                "Bearer ${config.getString("mastodon.access-token")}"
+            )
+            .form("status", statusContent)
+
+        client(request)
+        client.close()
+
+        return true
+    }
+
+    private fun updateItemAsDoneToDb(resultSet: ResultSet): Boolean {
+        val preparedStatement =
+            sqliteDb.statement.connection.prepareStatement("UPDATE rss_feeds_items SET post_status = ? WHERE id = ?;")
+        preparedStatement.setInt(1, RssFeeds.PostStatus.DONE.status)
+        preparedStatement.setInt(2, resultSet.getInt("id"))
+        preparedStatement.executeUpdate()
+
+        return true
+    }
+
+    private fun getPendingItemsFromDb(): ResultSet? {
+        val preparedStatement = sqliteDb.statement.connection.prepareStatement(
+            """
+            SELECT * FROM rss_feeds_items WHERE post_status = ? OR post_status = ?;
+            """.trimIndent()
+        )
+
+        preparedStatement.setInt(1, RssFeeds.PostStatus.QUEUED.status)
+        preparedStatement.setInt(2, RssFeeds.PostStatus.FAILED.status)
+        return preparedStatement.executeQuery()
+    }
 }

@@ -55,10 +55,11 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
 
     // http4k
-    implementation(platform("org.http4k:http4k-bom:4.39.0.0"))
+    implementation(platform("org.http4k:http4k-bom:4.40.0.0"))
     implementation("org.http4k:http4k-core")
     implementation("org.http4k:http4k-server-jetty")
     implementation("org.http4k:http4k-client-jetty")
+    implementation("org.http4k:http4k-multipart")
 
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
     implementation("org.slf4j:slf4j-api:2.0.6")

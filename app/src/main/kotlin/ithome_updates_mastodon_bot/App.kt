@@ -53,9 +53,9 @@ class App : LoggerHelper, ConfigHelper {
             .withIdentity("postToMastodonInstanceJob_${identity}", defaultSchedulerGroup)
             .usingJobData("identity", identity).build()
         val postToMastodonInstanceJobTrigger: Trigger = TriggerBuilder.newTrigger()
-            .withIdentity("postToMastodonInstanceJobTrigger_${identity}", defaultSchedulerGroup).startNow()
+            .withIdentity("postToMastodonInstanceJobTrigger_${identity}", defaultSchedulerGroup)
             .withSchedule(
-                SimpleScheduleBuilder.simpleSchedule().withIntervalInMinutes(10).repeatForever()
+                CronScheduleBuilder.cronSchedule("0 20 0/1 ? * * *")
             ).build()
         logger.info("Registering scheduled job 'postToMastodonInstanceJob_${identity}'")
         scheduler.scheduleJob(postToMastodonInstanceJob, postToMastodonInstanceJobTrigger)
@@ -67,8 +67,8 @@ class App : LoggerHelper, ConfigHelper {
             .usingJobData("rssFeedsUrl", rssFeedsUrl).build()
         val updateRssFeedsDbJobTrigger: Trigger =
             TriggerBuilder.newTrigger().withIdentity("updateRssFeedsDbJobTrigger_${identity}", defaultSchedulerGroup)
-                .startNow().withSchedule(
-                    SimpleScheduleBuilder.simpleSchedule().withIntervalInMinutes(10).repeatForever()
+                .withSchedule(
+                    CronScheduleBuilder.cronSchedule("0 10 0/1 ? * * *")
                 ).build()
         logger.info("Registering scheduled job 'updateRssFeedsDbJob_${identity}'")
         scheduler.scheduleJob(updateRssFeedsDbJob, updateRssFeedsDbJobTrigger)

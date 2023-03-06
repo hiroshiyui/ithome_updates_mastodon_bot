@@ -45,9 +45,8 @@ class RssFeeds(rssFeedsUrl: String) : LoggerHelper {
 
     enum class PostStatus(val status: Int) {
         QUEUED(0),
-        POSTING(1),
-        DONE(2),
-        FAILED(3)
+        DONE(1),
+        FAILED(2)
     }
 
     init {
