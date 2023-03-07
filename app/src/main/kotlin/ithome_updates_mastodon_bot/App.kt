@@ -53,8 +53,7 @@ class App : LoggerHelper, ConfigHelper {
             .withIdentity("postToMastodonInstanceJob_${identity}", defaultSchedulerGroup)
             .usingJobData("identity", identity).build()
         val postToMastodonInstanceJobTrigger: Trigger = TriggerBuilder.newTrigger()
-            .withIdentity("postToMastodonInstanceJobTrigger_${identity}", defaultSchedulerGroup)
-            .withSchedule(
+            .withIdentity("postToMastodonInstanceJobTrigger_${identity}", defaultSchedulerGroup).withSchedule(
                 CronScheduleBuilder.cronSchedule("0 20-40/2 * ? * * *")
             ).build()
         logger.info("Registering scheduled job 'postToMastodonInstanceJob_${identity}'")
@@ -83,8 +82,9 @@ class App : LoggerHelper, ConfigHelper {
 fun main() {
     val app = App()
 
-    app.logger.info("Starting ithome_updates_mastodon_bot...")
-    println(app.greeting)
-
-    app.loadRssFeeds()
+    app.let {
+        it.logger.info("Starting ithome_updates_mastodon_bot...")
+        println(it.greeting)
+        it.loadRssFeeds()
+    }
 }
