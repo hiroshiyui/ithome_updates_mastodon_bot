@@ -53,7 +53,6 @@ class PostToMastodonInstanceJob : Job, LoggerHelper, ConfigHelper {
         } finally {
             sqliteDb.statement.close()
             sqliteDb.close()
-            client.close()
         }
     }
 
