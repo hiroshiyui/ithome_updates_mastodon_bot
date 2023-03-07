@@ -32,6 +32,7 @@ import java.sql.ResultSet
 
 class PostToMastodonInstanceJob : Job, LoggerHelper, ConfigHelper {
     private val sqliteDb = SqliteDb()
+    private val client = JettyClient()
 
     override fun execute(context: JobExecutionContext?) {
         logger.info("Running PostToMastodonInstanceJob...")
@@ -52,11 +53,11 @@ class PostToMastodonInstanceJob : Job, LoggerHelper, ConfigHelper {
         } finally {
             sqliteDb.statement.close()
             sqliteDb.close()
+            client.close()
         }
     }
 
     private fun postToMastodonInstance(resultSet: ResultSet): Boolean {
-        val client = JettyClient()
         val postStatusApiEndpoint = "${config.getString("mastodon.instance-url")}/api/v1/statuses"
         val statusContent =
             "〈${resultSet.getString("title")}〉\n\n${resultSet.getString("description")}\n${resultSet.getString("link")}".trim()
@@ -69,7 +70,6 @@ class PostToMastodonInstanceJob : Job, LoggerHelper, ConfigHelper {
             .form("status", statusContent)
 
         val requestCall = client(request)
-        client.close()
 
         return requestCall.status.successful
     }
