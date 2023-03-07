@@ -35,20 +35,24 @@ class PostToMastodonInstanceJob : Job, LoggerHelper, ConfigHelper {
 
     override fun execute(context: JobExecutionContext?) {
         logger.info("Running PostToMastodonInstanceJob...")
-        getRandomSinglePendingItemFromDb()?.apply {
-            while (this.next()) {
-                val postResult: Boolean = postToMastodonInstance(this)
+        try {
+            getRandomSinglePendingItemFromDb()?.apply {
+                while (this.next()) {
+                    val postResult: Boolean = postToMastodonInstance(this)
 
-                if (postResult) {
-                    updateItemAsStatusToDb(this, RssFeeds.PostStatus.DONE)
-                } else {
-                    updateItemAsStatusToDb(this, RssFeeds.PostStatus.FAILED)
+                    if (postResult) {
+                        updateItemAsStatusToDb(this, RssFeeds.PostStatus.DONE)
+                    } else {
+                        updateItemAsStatusToDb(this, RssFeeds.PostStatus.FAILED)
+                    }
                 }
             }
+        } catch (e: Exception) {
+            logger.error(e.message)
+        } finally {
+            sqliteDb.statement.close()
+            sqliteDb.close()
         }
-
-        sqliteDb.statement.close()
-        sqliteDb.close()
     }
 
     private fun postToMastodonInstance(resultSet: ResultSet): Boolean {

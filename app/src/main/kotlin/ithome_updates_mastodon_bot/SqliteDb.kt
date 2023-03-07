@@ -46,6 +46,7 @@ class SqliteDb : LoggerHelper {
                 );
         """.trimIndent()
         )
+        statement.close()
     }
 
     fun close() {

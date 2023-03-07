@@ -60,11 +60,11 @@ class RssFeeds(rssFeedsUrl: String) : LoggerHelper {
         return bodyString
     }
 
-    fun items(): NodeList {
+    private fun items(): NodeList {
         return document.getElementsByTagName("item")
     }
 
-    fun title(): String {
+    private fun title(): String {
         val titleXPath = "//channel/title"
         val titleNode: Node = xPath.compile(titleXPath).evaluate(document, XPathConstants.NODE) as Node
         return titleNode.textContent.trim()
@@ -78,24 +78,31 @@ class RssFeeds(rssFeedsUrl: String) : LoggerHelper {
         """.trimIndent()
         )
 
-        preparedStatement.setString(1, title())
-        preparedStatement.setString(2, item.title())
-        preparedStatement.setString(3, item.description())
-        preparedStatement.setString(4, item.link())
-        preparedStatement.setString(5, item.guid())
-        preparedStatement.setInt(6, PostStatus.QUEUED.status)
+        preparedStatement.apply {
+            this.setString(1, title())
+            this.setString(2, item.title())
+            this.setString(3, item.description())
+            this.setString(4, item.link())
+            this.setString(5, item.guid())
+            this.setInt(6, PostStatus.QUEUED.status)
+        }
         preparedStatement.executeUpdate()
     }
 
     fun updateDb() {
         val sqliteDb = SqliteDb()
 
-        repeat(this.items().length) { entry ->
-            val itemNode: Node = this.items().item(entry)
-            val item = RssFeedsItem(itemNode)
-            saveItem(item, sqliteDb)
+        try {
+            repeat(this.items().length) { entry ->
+                val itemNode: Node = this.items().item(entry)
+                val item = RssFeedsItem(itemNode)
+                saveItem(item, sqliteDb)
+            }
+        } catch (e: Exception) {
+            logger.error(e.message)
+        } finally {
+            sqliteDb.statement.close()
+            sqliteDb.close()
         }
-
-        sqliteDb.close()
     }
 }
