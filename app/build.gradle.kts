@@ -81,6 +81,10 @@ kotlin {
 
 tasks.test {
     useJUnitPlatform()
+
+    testLogging {
+        events("passed")
+    }
 }
 
 application {
