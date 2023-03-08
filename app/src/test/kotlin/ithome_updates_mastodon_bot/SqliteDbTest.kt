@@ -20,14 +20,31 @@ package ithome_updates_mastodon_bot
 
 import java.sql.ResultSet
 import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class SqliteDbTest {
+    val tableName: String = "rss_feeds_items"
+
     @Test
     fun sqliteDbShouldHavaTableRssFeedsItems() {
         val classUnderTest = SqliteDb()
-        val dbMetadataResultSet : ResultSet = classUnderTest.statement.connection.metaData.getTables(null, null, "rss_feeds_items", arrayOf("TABLE"))
+        val dbMetadataResultSet: ResultSet =
+            classUnderTest.statement.connection.metaData.getTables(null, null, tableName, arrayOf("TABLE"))
         assertTrue(dbMetadataResultSet.next(), "Database should have table 'rss_feeds_items'")
+        classUnderTest.close()
+    }
+
+    @Test
+    fun tableRssFeedsItemsShouldHaveColumnId() {
+        val classUnderTest = SqliteDb()
+        val columnIdDescriptionResultSet: ResultSet =
+            classUnderTest.statement.connection.metaData.getColumns(null, null, tableName, "id")
+        assertTrue(columnIdDescriptionResultSet.next(), "Table ${tableName} has column 'id'")
+        val typeNameIndex = columnIdDescriptionResultSet.findColumn("TYPE_NAME")
+        assertNotNull(typeNameIndex)
+        assertEquals(columnIdDescriptionResultSet.getString(typeNameIndex), "INTEGER")
         classUnderTest.close()
     }
 }
