@@ -20,8 +20,6 @@ package ithome_updates_mastodon_bot
 
 import java.sql.ResultSet
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class SqliteDbTest {
@@ -38,13 +36,42 @@ class SqliteDbTest {
 
     @Test
     fun tableRssFeedsItemsShouldHaveColumnId() {
+        assertTrue(checkTableRssFeedsItemsHaveColumn("id"))
+        assertTrue(checkTableRssFeedsItemsHaveColumnInType("id", "INTEGER"))
+    }
+
+    @Test
+    fun tableRssFeedsItemsShouldHaveColumnChannel() {
+        assertTrue(checkTableRssFeedsItemsHaveColumn("channel"))
+        assertTrue(checkTableRssFeedsItemsHaveColumnInType("channel", "TEXT"))
+    }
+
+    private fun checkTableRssFeedsItemsHaveColumn(columnName: String): Boolean {
         val classUnderTest = SqliteDb()
-        val columnIdDescriptionResultSet: ResultSet =
-            classUnderTest.statement.connection.metaData.getColumns(null, null, tableName, "id")
-        assertTrue(columnIdDescriptionResultSet.next(), "Table ${tableName} has column 'id'")
-        val typeNameIndex = columnIdDescriptionResultSet.findColumn("TYPE_NAME")
-        assertNotNull(typeNameIndex)
-        assertEquals(columnIdDescriptionResultSet.getString(typeNameIndex), "INTEGER")
-        classUnderTest.close()
+        val columnIdDescriptionResultSet: ResultSet
+        val result: Boolean
+        try {
+            columnIdDescriptionResultSet =
+                classUnderTest.statement.connection.metaData.getColumns(null, null, tableName, columnName)
+            result = columnIdDescriptionResultSet.next()
+        } finally {
+            classUnderTest.close()
+        }
+        return result
+    }
+
+    private fun checkTableRssFeedsItemsHaveColumnInType(columnName: String, columnType: String): Boolean {
+        val classUnderTest = SqliteDb()
+        val columnIdDescriptionResultSet: ResultSet
+        val typeNameIndex: Int
+        val result: Boolean
+        try {
+            columnIdDescriptionResultSet = classUnderTest.statement.connection.metaData.getColumns(null, null, tableName, columnName)
+            typeNameIndex = columnIdDescriptionResultSet.findColumn("TYPE_NAME")
+            result = (columnIdDescriptionResultSet.getString(typeNameIndex) == columnType)
+        } finally {
+            classUnderTest.close()
+        }
+        return result
     }
 }
