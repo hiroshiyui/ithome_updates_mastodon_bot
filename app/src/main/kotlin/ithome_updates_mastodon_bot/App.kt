@@ -54,7 +54,7 @@ class App : LoggerHelper, ConfigHelper {
             .usingJobData("identity", identity).build()
         val postToMastodonInstanceJobTrigger: Trigger = TriggerBuilder.newTrigger()
             .withIdentity("postToMastodonInstanceJobTrigger_${identity}", defaultSchedulerGroup).withSchedule(
-                CronScheduleBuilder.cronSchedule("0 20-40/2 * ? * * *")
+                CronScheduleBuilder.cronSchedule("0 20-40/5 * ? * * *")
             ).build()
         logger.info("Registering scheduled job 'postToMastodonInstanceJob_${identity}'")
         scheduler.scheduleJob(postToMastodonInstanceJob, postToMastodonInstanceJobTrigger)
