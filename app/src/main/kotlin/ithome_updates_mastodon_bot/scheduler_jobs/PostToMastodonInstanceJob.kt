@@ -95,15 +95,4 @@ class PostToMastodonInstanceJob : Job, LoggerHelper, ConfigHelper {
         return preparedStatement.executeQuery()
     }
 
-    private fun getPendingItemsFromDb(): ResultSet? {
-        val preparedStatement = sqliteDb.statement.connection.prepareStatement(
-            """
-            SELECT * FROM rss_feeds_items WHERE post_status = ? OR post_status = ?;
-            """.trimIndent()
-        )
-
-        preparedStatement.setInt(1, RssFeeds.PostStatus.QUEUED.status)
-        preparedStatement.setInt(2, RssFeeds.PostStatus.FAILED.status)
-        return preparedStatement.executeQuery()
-    }
 }
