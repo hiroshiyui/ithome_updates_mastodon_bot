@@ -23,8 +23,8 @@ import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.Statement
 
-class SqliteDb : LoggerHelper {
-    private var connection: Connection = DriverManager.getConnection("jdbc:sqlite:rssfeeds.db")
+class SqliteDb(dbFilename: String = "rssfeeds.db") : LoggerHelper {
+    private var connection: Connection = DriverManager.getConnection("jdbc:sqlite:${dbFilename}")
     val statement: Statement = connection.createStatement()
 
     init {

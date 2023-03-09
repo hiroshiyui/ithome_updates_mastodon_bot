@@ -24,10 +24,11 @@ import kotlin.test.assertTrue
 
 class SqliteDbTest {
     val tableName: String = "rss_feeds_items"
+    val testDbFilename: String = "rssfeeds_test.db"
 
     @Test
     fun sqliteDbShouldHavaTableRssFeedsItems() {
-        val classUnderTest = SqliteDb()
+        val classUnderTest = SqliteDb(testDbFilename)
         val dbMetadataResultSet: ResultSet =
             classUnderTest.statement.connection.metaData.getTables(null, null, tableName, arrayOf("TABLE"))
         assertTrue(dbMetadataResultSet.next(), "Database should have table 'rss_feeds_items'")
@@ -47,7 +48,7 @@ class SqliteDbTest {
     }
 
     private fun checkTableRssFeedsItemsHaveColumn(columnName: String): Boolean {
-        val classUnderTest = SqliteDb()
+        val classUnderTest = SqliteDb(testDbFilename)
         val columnIdDescriptionResultSet: ResultSet
         val result: Boolean
         try {
@@ -61,7 +62,7 @@ class SqliteDbTest {
     }
 
     private fun checkTableRssFeedsItemsHaveColumnInType(columnName: String, columnType: String): Boolean {
-        val classUnderTest = SqliteDb()
+        val classUnderTest = SqliteDb(testDbFilename)
         val columnIdDescriptionResultSet: ResultSet
         val typeNameIndex: Int
         val result: Boolean
