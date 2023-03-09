@@ -47,6 +47,36 @@ class SqliteDbTest {
         assertTrue(checkTableRssFeedsItemsHaveColumnInType("channel", "TEXT"))
     }
 
+    @Test
+    fun tableRssFeedsItemsShouldHaveColumnTitle() {
+        assertTrue(checkTableRssFeedsItemsHaveColumn("title"))
+        assertTrue(checkTableRssFeedsItemsHaveColumnInType("title", "TEXT"))
+    }
+
+    @Test
+    fun tableRssFeedsItemsShouldHaveColumnDescription() {
+        assertTrue(checkTableRssFeedsItemsHaveColumn("description"))
+        assertTrue(checkTableRssFeedsItemsHaveColumnInType("description", "TEXT"))
+    }
+
+    @Test
+    fun tableRssFeedsItemsShouldHaveColumnLink() {
+        assertTrue(checkTableRssFeedsItemsHaveColumn("link"))
+        assertTrue(checkTableRssFeedsItemsHaveColumnInType("link", "TEXT"))
+    }
+
+    @Test
+    fun tableRssFeedsItemsShouldHaveColumnGuid() {
+        assertTrue(checkTableRssFeedsItemsHaveColumn("guid"))
+        assertTrue(checkTableRssFeedsItemsHaveColumnInType("guid", "TEXT"))
+    }
+
+    @Test
+    fun tableRssFeedsItemsShouldHaveColumnPostStatus() {
+        assertTrue(checkTableRssFeedsItemsHaveColumn("post_status"))
+        assertTrue(checkTableRssFeedsItemsHaveColumnInType("post_status", "INTEGER"))
+    }
+
     private fun checkTableRssFeedsItemsHaveColumn(columnName: String): Boolean {
         val classUnderTest = SqliteDb(testDbFilename)
         val columnIdDescriptionResultSet: ResultSet
@@ -67,7 +97,8 @@ class SqliteDbTest {
         val typeNameIndex: Int
         val result: Boolean
         try {
-            columnIdDescriptionResultSet = classUnderTest.statement.connection.metaData.getColumns(null, null, tableName, columnName)
+            columnIdDescriptionResultSet =
+                classUnderTest.statement.connection.metaData.getColumns(null, null, tableName, columnName)
             typeNameIndex = columnIdDescriptionResultSet.findColumn("TYPE_NAME")
             result = (columnIdDescriptionResultSet.getString(typeNameIndex) == columnType)
         } finally {
