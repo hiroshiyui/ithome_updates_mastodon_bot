@@ -60,11 +60,11 @@ class RssFeeds(rssFeedsUrl: String) : LoggerHelper {
         return bodyString
     }
 
-    private fun items(): NodeList {
+    fun items(): NodeList {
         return document.getElementsByTagName("item")
     }
 
-    private fun title(): String {
+    fun title(): String {
         val titleXPath = "//channel/title"
         val titleNode: Node = xPath.compile(titleXPath).evaluate(document, XPathConstants.NODE) as Node
         return titleNode.textContent.trim()
@@ -89,8 +89,8 @@ class RssFeeds(rssFeedsUrl: String) : LoggerHelper {
         preparedStatement.executeUpdate()
     }
 
-    fun updateDb() {
-        val sqliteDb = SqliteDb()
+    fun updateDb(dbFilename: String = "rssfeeds.db") {
+        val sqliteDb = SqliteDb(dbFilename)
 
         try {
             repeat(this.items().length) { entry ->
