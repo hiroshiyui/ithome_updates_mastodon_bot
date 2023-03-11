@@ -22,7 +22,7 @@ import ithome_updates_mastodon_bot.RssFeeds
 import ithome_updates_mastodon_bot.SqliteDb
 import ithome_updates_mastodon_bot.helpers.ConfigHelper
 import ithome_updates_mastodon_bot.helpers.LoggerHelper
-import org.http4k.client.JettyClient
+import ithome_updates_mastodon_bot.singleton.HttpClientSingleton
 import org.http4k.core.Method
 import org.http4k.core.Request
 import org.http4k.core.body.form
@@ -32,7 +32,7 @@ import java.sql.ResultSet
 
 class PostToMastodonInstanceJob : Job, LoggerHelper, ConfigHelper {
     private val sqliteDb = SqliteDb()
-    private val client = JettyClient()
+    private val client = HttpClientSingleton.client
 
     override fun execute(context: JobExecutionContext?) {
         logger.info("Running PostToMastodonInstanceJob...")

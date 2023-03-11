@@ -20,7 +20,7 @@
 package ithome_updates_mastodon_bot
 
 import ithome_updates_mastodon_bot.helpers.LoggerHelper
-import org.http4k.client.JettyClient
+import ithome_updates_mastodon_bot.singleton.HttpClientSingleton
 import org.http4k.core.Method
 import org.http4k.core.Request
 import org.w3c.dom.Document
@@ -35,7 +35,7 @@ import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
 
 class RssFeeds(rssFeedsUrl: String) : LoggerHelper {
-    private val client = JettyClient()
+    private val client = HttpClientSingleton.client
     private val request = Request(Method.GET, rssFeedsUrl)
     private val bodyString: String = client(request).bodyString()
     private var response: InputSource = InputSource(StringReader(bodyString))
