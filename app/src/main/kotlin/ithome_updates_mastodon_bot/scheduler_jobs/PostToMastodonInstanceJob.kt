@@ -28,6 +28,7 @@ import org.http4k.core.Request
 import org.http4k.core.body.form
 import org.quartz.Job
 import org.quartz.JobExecutionContext
+import java.sql.PreparedStatement
 import java.sql.ResultSet
 
 class PostToMastodonInstanceJob : Job, LoggerHelper, ConfigHelper {
@@ -37,10 +38,20 @@ class PostToMastodonInstanceJob : Job, LoggerHelper, ConfigHelper {
     override fun execute(context: JobExecutionContext?) {
         logger.info("Running PostToMastodonInstanceJob...")
         try {
-            getRandomSinglePendingItemFromDb()?.apply {
+            val randomPendingItemPreparedStatement: PreparedStatement = sqliteDb.connection.prepareStatement(
+                "SELECT * FROM rss_feeds_items WHERE post_status = ? OR post_status = ? ORDER BY RANDOM() LIMIT 1;"
+            )
+
+            randomPendingItemPreparedStatement.apply {
+                this.setInt(1, RssFeeds.PostStatus.QUEUED.status)
+                this.setInt(2, RssFeeds.PostStatus.FAILED.status)
+            }
+
+            val randomPendingItem : ResultSet = randomPendingItemPreparedStatement.executeQuery()
+
+            randomPendingItem.apply {
                 while (this.next()) {
                     val postResult: Boolean = postToMastodonInstance(this)
-
                     if (postResult) {
                         updateItemAsStatusToDb(this, RssFeeds.PostStatus.DONE)
                     } else {
@@ -48,11 +59,11 @@ class PostToMastodonInstanceJob : Job, LoggerHelper, ConfigHelper {
                     }
                 }
             }
+            randomPendingItem.close()
+            randomPendingItemPreparedStatement.close()
         } catch (e: Exception) {
             logger.error(e.message)
         } finally {
-            // release SQLite connection,
-            // don't forget any related resources such as statements or prepared-statements, release them early before here!
             sqliteDb.close()
         }
     }
@@ -82,17 +93,4 @@ class PostToMastodonInstanceJob : Job, LoggerHelper, ConfigHelper {
         preparedStatement.executeUpdate()
         preparedStatement.close()
     }
-
-    private fun getRandomSinglePendingItemFromDb(): ResultSet? {
-        val preparedStatement = sqliteDb.connection.prepareStatement(
-            """
-            SELECT * FROM rss_feeds_items WHERE post_status = ? OR post_status = ? ORDER BY RANDOM() LIMIT 1;
-            """.trimIndent()
-        )
-
-        preparedStatement.setInt(1, RssFeeds.PostStatus.QUEUED.status)
-        preparedStatement.setInt(2, RssFeeds.PostStatus.FAILED.status)
-        return preparedStatement.executeQuery()
-    }
-
 }
