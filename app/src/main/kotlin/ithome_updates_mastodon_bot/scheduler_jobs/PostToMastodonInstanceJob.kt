@@ -51,7 +51,8 @@ class PostToMastodonInstanceJob : Job, LoggerHelper, ConfigHelper {
         } catch (e: Exception) {
             logger.error(e.message)
         } finally {
-            sqliteDb.statement.close()
+            // release SQLite connection,
+            // don't forget any related resources such as statements or prepared-statements, release them early before here!
             sqliteDb.close()
         }
     }
@@ -75,7 +76,7 @@ class PostToMastodonInstanceJob : Job, LoggerHelper, ConfigHelper {
 
     private fun updateItemAsStatusToDb(resultSet: ResultSet, postStatus: RssFeeds.PostStatus): Boolean {
         val preparedStatement =
-            sqliteDb.statement.connection.prepareStatement("UPDATE rss_feeds_items SET post_status = ? WHERE id = ?;")
+            sqliteDb.connection.prepareStatement("UPDATE rss_feeds_items SET post_status = ? WHERE id = ?;")
         preparedStatement.setInt(1, postStatus.status)
         preparedStatement.setInt(2, resultSet.getInt("id"))
         preparedStatement.executeUpdate()
@@ -84,7 +85,7 @@ class PostToMastodonInstanceJob : Job, LoggerHelper, ConfigHelper {
     }
 
     private fun getRandomSinglePendingItemFromDb(): ResultSet? {
-        val preparedStatement = sqliteDb.statement.connection.prepareStatement(
+        val preparedStatement = sqliteDb.connection.prepareStatement(
             """
             SELECT * FROM rss_feeds_items WHERE post_status = ? OR post_status = ? ORDER BY RANDOM() LIMIT 1;
             """.trimIndent()

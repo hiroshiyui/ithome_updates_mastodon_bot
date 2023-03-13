@@ -30,7 +30,7 @@ class SqliteDbTest {
     fun sqliteDbShouldHavaTableRssFeedsItems() {
         val classUnderTest = SqliteDb(testDbFilename)
         val dbMetadataResultSet: ResultSet =
-            classUnderTest.statement.connection.metaData.getTables(null, null, tableName, arrayOf("TABLE"))
+            classUnderTest.connection.metaData.getTables(null, null, tableName, arrayOf("TABLE"))
         assertTrue(dbMetadataResultSet.next(), "Database should have table 'rss_feeds_items'")
         classUnderTest.close()
     }
@@ -83,7 +83,7 @@ class SqliteDbTest {
         val result: Boolean
         try {
             columnIdDescriptionResultSet =
-                classUnderTest.statement.connection.metaData.getColumns(null, null, tableName, columnName)
+                classUnderTest.connection.metaData.getColumns(null, null, tableName, columnName)
             result = columnIdDescriptionResultSet.next()
         } finally {
             classUnderTest.close()
@@ -98,7 +98,7 @@ class SqliteDbTest {
         val result: Boolean
         try {
             columnIdDescriptionResultSet =
-                classUnderTest.statement.connection.metaData.getColumns(null, null, tableName, columnName)
+                classUnderTest.connection.metaData.getColumns(null, null, tableName, columnName)
             typeNameIndex = columnIdDescriptionResultSet.findColumn("TYPE_NAME")
             result = (columnIdDescriptionResultSet.getString(typeNameIndex) == columnType)
         } finally {

@@ -71,7 +71,7 @@ class RssFeeds(rssFeedsUrl: String) : LoggerHelper {
     }
 
     private fun saveItem(item: RssFeedsItem, sqliteDb: SqliteDb) {
-        val preparedStatement = sqliteDb.statement.connection.prepareStatement(
+        val preparedStatement = sqliteDb.connection.prepareStatement(
             """
             INSERT OR IGNORE INTO rss_feeds_items (channel, title, description, link, guid, post_status)
                 VALUES(?, ?, ?, ?, ?, ?)
@@ -87,6 +87,7 @@ class RssFeeds(rssFeedsUrl: String) : LoggerHelper {
             this.setInt(6, PostStatus.QUEUED.status)
         }
         preparedStatement.executeUpdate()
+        preparedStatement.close()
     }
 
     fun updateDb(dbFilename: String = "rssfeeds.db") {
@@ -101,7 +102,6 @@ class RssFeeds(rssFeedsUrl: String) : LoggerHelper {
         } catch (e: Exception) {
             logger.error(e.message)
         } finally {
-            sqliteDb.statement.close()
             sqliteDb.close()
         }
     }

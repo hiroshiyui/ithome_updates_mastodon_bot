@@ -52,9 +52,12 @@ class RssFeedsTest {
         }
 
         classUnderTest.updateDb(testDbFilename)
-        assert(testDb.statement.executeQuery("SELECT COUNT(*) FROM ${testTableName}").getInt(1) == items.length)
+        assert(
+            testDb.connection.createStatement().executeQuery("SELECT COUNT(*) FROM ${testTableName}")
+                .getInt(1) == items.length
+        )
 
-        testDb.statement.execute("DELETE FROM ${testTableName}")
+        testDb.connection.createStatement().execute("DELETE FROM ${testTableName}")
         testDb.close()
     }
 }

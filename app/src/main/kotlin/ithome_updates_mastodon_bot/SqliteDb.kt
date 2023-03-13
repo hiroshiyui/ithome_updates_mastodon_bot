@@ -24,11 +24,11 @@ import java.sql.DriverManager
 import java.sql.Statement
 
 class SqliteDb(dbFilename: String = "rssfeeds.db") : LoggerHelper {
-    private var connection: Connection = DriverManager.getConnection("jdbc:sqlite:${dbFilename}")
-    val statement: Statement = connection.createStatement()
+    val connection: Connection = DriverManager.getConnection("jdbc:sqlite:${dbFilename}")
 
     init {
         logger.info("Connection to SQLite database has been established.")
+        val statement: Statement = connection.createStatement()
         statement.queryTimeout = 10
         // create database table for RSS Feeds items
         statement.executeUpdate(
