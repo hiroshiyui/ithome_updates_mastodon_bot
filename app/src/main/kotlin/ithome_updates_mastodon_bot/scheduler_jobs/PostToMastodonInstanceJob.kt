@@ -74,14 +74,13 @@ class PostToMastodonInstanceJob : Job, LoggerHelper, ConfigHelper {
         return requestCall.status.successful
     }
 
-    private fun updateItemAsStatusToDb(resultSet: ResultSet, postStatus: RssFeeds.PostStatus): Boolean {
+    private fun updateItemAsStatusToDb(resultSet: ResultSet, postStatus: RssFeeds.PostStatus) {
         val preparedStatement =
             sqliteDb.connection.prepareStatement("UPDATE rss_feeds_items SET post_status = ? WHERE id = ?;")
         preparedStatement.setInt(1, postStatus.status)
         preparedStatement.setInt(2, resultSet.getInt("id"))
         preparedStatement.executeUpdate()
-
-        return true
+        preparedStatement.close()
     }
 
     private fun getRandomSinglePendingItemFromDb(): ResultSet? {
