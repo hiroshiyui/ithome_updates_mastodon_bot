@@ -73,7 +73,11 @@ dependencies {
     implementation("org.apache.commons:commons-configuration2:2.8.0")
     // https://mvnrepository.com/artifact/commons-beanutils/commons-beanutils
     implementation("commons-beanutils:commons-beanutils:1.9.4")
+
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
+
+    // https://mvnrepository.com/artifact/org.unbescape/unbescape
+    implementation("org.unbescape:unbescape:1.1.6.RELEASE")
 }
 
 kotlin {

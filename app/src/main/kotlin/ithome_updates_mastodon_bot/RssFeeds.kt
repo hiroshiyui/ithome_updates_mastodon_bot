@@ -23,6 +23,7 @@ import ithome_updates_mastodon_bot.helpers.LoggerHelper
 import ithome_updates_mastodon_bot.singleton.HttpClientSingleton
 import org.http4k.core.Method
 import org.http4k.core.Request
+import org.unbescape.html.HtmlEscape
 import org.w3c.dom.Document
 import org.w3c.dom.Node
 import org.w3c.dom.NodeList
@@ -80,8 +81,8 @@ class RssFeeds(rssFeedsUrl: String) : LoggerHelper {
 
         preparedStatement.apply {
             this.setString(1, title())
-            this.setString(2, item.title())
-            this.setString(3, item.description())
+            this.setString(2, item.title().let { HtmlEscape.unescapeHtml(it) })
+            this.setString(3, item.description().let { HtmlEscape.unescapeHtml(it) })
             this.setString(4, item.link())
             this.setString(5, item.guid())
             this.setInt(6, PostStatus.QUEUED.status)
