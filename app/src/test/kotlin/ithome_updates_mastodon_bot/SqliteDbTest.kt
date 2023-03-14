@@ -23,8 +23,8 @@ import kotlin.test.Test
 import kotlin.test.assertTrue
 
 class SqliteDbTest {
-    val tableName: String = "rss_feeds_items"
-    val testDbFilename: String = "rssfeeds_test.db"
+    private val tableName: String = "rss_feeds_items"
+    private val testDbFilename: String = "rssfeeds_test.db"
 
     @Test
     fun sqliteDbShouldHavaTableRssFeedsItems() {

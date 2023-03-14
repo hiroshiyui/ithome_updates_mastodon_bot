@@ -26,9 +26,9 @@ import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 
 class RssFeedsTest {
-    val testTableName: String = "rss_feeds_items"
-    val testDbFilename: String = "rssfeeds_test.db"
-    val testDb = SqliteDb(testDbFilename)
+    private val testTableName: String = "rss_feeds_items"
+    private val testDbFilename: String = "rssfeeds_test.db"
+    private val testDb = SqliteDb(testDbFilename)
 
     @Test
     fun rssFeedsShouldHaveTitle() {
