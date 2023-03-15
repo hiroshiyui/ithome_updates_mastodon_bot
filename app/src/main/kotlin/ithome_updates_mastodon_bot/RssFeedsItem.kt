@@ -18,15 +18,16 @@
 
 package ithome_updates_mastodon_bot
 
+import org.unbescape.html.HtmlEscape
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 
 class RssFeedsItem(node: Node) {
     private val item = node as Element
 
-    val title: String = item.getElementsByTagName("title").item(0).textContent.trim()
+    val title: String = item.getElementsByTagName("title").item(0).textContent.trim().let { HtmlEscape.unescapeHtml(it) }
 
-    val description: String = item.getElementsByTagName("description").item(0).textContent.trim()
+    val description: String = item.getElementsByTagName("description").item(0).textContent.trim().let { HtmlEscape.unescapeHtml(it) }
 
     val link: String = item.getElementsByTagName("link").item(0).textContent.trim()
 
