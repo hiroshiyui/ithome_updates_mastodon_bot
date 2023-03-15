@@ -43,20 +43,20 @@ class App : LoggerHelper, ConfigHelper {
                 val rssFeedsUrl: String = it.getString("url")
                 val identity: String = it.getString("identity")
                 registerScheduleUpdateRssFeedsDbJob(rssFeedsUrl, identity)
-                registerSchedulePostToMastodonInstanceJob(identity)
             }
+            registerSchedulePostToMastodonInstanceJob()
         }
     }
 
-    private fun registerSchedulePostToMastodonInstanceJob(identity: String) {
+    private fun registerSchedulePostToMastodonInstanceJob() {
         val postToMastodonInstanceJob: JobDetail = JobBuilder.newJob(PostToMastodonInstanceJob::class.java)
-            .withIdentity("postToMastodonInstanceJob_${identity}", defaultSchedulerGroup)
-            .usingJobData("identity", identity).build()
+            .withIdentity("postToMastodonInstanceJob", defaultSchedulerGroup)
+            .build()
         val postToMastodonInstanceJobTrigger: Trigger = TriggerBuilder.newTrigger()
-            .withIdentity("postToMastodonInstanceJobTrigger_${identity}", defaultSchedulerGroup).withSchedule(
+            .withIdentity("postToMastodonInstanceJobTrigger", defaultSchedulerGroup).withSchedule(
                 CronScheduleBuilder.cronSchedule("0 20-50/10 8-20 ? * * *")
             ).build()
-        logger.info("Registering scheduled job 'postToMastodonInstanceJob_${identity}'")
+        logger.info("Registering scheduled job 'postToMastodonInstanceJob'")
         scheduler.scheduleJob(postToMastodonInstanceJob, postToMastodonInstanceJobTrigger)
     }
 
