@@ -18,8 +18,7 @@
 
 package ithome_updates_mastodon_bot.scheduler_jobs
 
-import ithome_updates_mastodon_bot.RssFeeds
-import ithome_updates_mastodon_bot.SqliteDb
+import ithome_updates_mastodon_bot.RssFeedsRepository
 import ithome_updates_mastodon_bot.helpers.ConfigHelper
 import ithome_updates_mastodon_bot.helpers.LoggerHelper
 import ithome_updates_mastodon_bot.singleton.HttpClientSingleton
@@ -28,50 +27,32 @@ import org.http4k.core.Request
 import org.http4k.core.body.form
 import org.quartz.Job
 import org.quartz.JobExecutionContext
-import java.sql.PreparedStatement
-import java.sql.ResultSet
 
 class PostToMastodonInstanceJob : Job, LoggerHelper, ConfigHelper {
-    private val sqliteDb = SqliteDb()
     private val client = HttpClientSingleton.client
 
-    override fun execute(context: JobExecutionContext?) {
+    override fun execute(context: JobExecutionContext) {
         logger.info("Running PostToMastodonInstanceJob...")
         try {
-            val randomPendingItemPreparedStatement: PreparedStatement = sqliteDb.connection.prepareStatement(
-                "SELECT * FROM rss_feeds_items WHERE post_status = ? OR post_status = ? ORDER BY RANDOM() LIMIT 1;"
-            )
-
-            randomPendingItemPreparedStatement.apply {
-                this.setInt(1, RssFeeds.PostStatus.QUEUED.status)
-                this.setInt(2, RssFeeds.PostStatus.FAILED.status)
-            }
-
-            val randomPendingItem : ResultSet = randomPendingItemPreparedStatement.executeQuery()
-
-            randomPendingItem.apply {
-                while (this.next()) {
-                    val postResult: Boolean = postToMastodonInstance(this)
-                    if (postResult) {
-                        updateItemAsStatusToDb(this, RssFeeds.PostStatus.DONE)
-                    } else {
-                        updateItemAsStatusToDb(this, RssFeeds.PostStatus.FAILED)
-                    }
+            val rssFeedsRepository = RssFeedsRepository()
+            val item = rssFeedsRepository.randomPendingItem()
+            if (item.title.isNotEmpty()) {
+                val postResult: Boolean = postToMastodonInstance(item)
+                if (postResult) {
+                    rssFeedsRepository.updateItemAsStatusToDb(item, RssFeedsRepository.PostStatus.DONE)
+                } else {
+                    rssFeedsRepository.updateItemAsStatusToDb(item, RssFeedsRepository.PostStatus.FAILED)
                 }
             }
-            randomPendingItem.close()
-            randomPendingItemPreparedStatement.close()
         } catch (e: Exception) {
             logger.error(e.message)
-        } finally {
-            sqliteDb.close()
         }
     }
 
-    private fun postToMastodonInstance(resultSet: ResultSet): Boolean {
+    private fun postToMastodonInstance(item: RssFeedsRepository.Item): Boolean {
         val postStatusApiEndpoint = "${config.getString("mastodon.instance-url")}/api/v1/statuses"
         val statusContent =
-            "〈${resultSet.getString("title")}〉\n\n${resultSet.getString("description")}\n${resultSet.getString("link")}".trim()
+            "〈${item.title}〉\n\n${item.description}\n${item.link}".trim()
         val request = Request(Method.POST, postStatusApiEndpoint)
             .header("Content-Type", "multipart/form-data")
             .header(
@@ -83,14 +64,5 @@ class PostToMastodonInstanceJob : Job, LoggerHelper, ConfigHelper {
         val requestCall = client(request)
 
         return requestCall.status.successful
-    }
-
-    private fun updateItemAsStatusToDb(resultSet: ResultSet, postStatus: RssFeeds.PostStatus) {
-        val preparedStatement =
-            sqliteDb.connection.prepareStatement("UPDATE rss_feeds_items SET post_status = ? WHERE id = ?;")
-        preparedStatement.setInt(1, postStatus.status)
-        preparedStatement.setInt(2, resultSet.getInt("id"))
-        preparedStatement.executeUpdate()
-        preparedStatement.close()
     }
 }

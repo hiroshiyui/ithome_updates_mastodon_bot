@@ -30,6 +30,6 @@ class UpdateRssFeedsDbJob : Job, LoggerHelper {
         val data: JobDataMap = context.mergedJobDataMap
         val rssFeedsUrl: String = data.getString("rssFeedsUrl")
         val rssFeeds = RssFeeds(rssFeedsUrl)
-        rssFeeds.updateDb()
+        rssFeeds.updateRepository()
     }
 }

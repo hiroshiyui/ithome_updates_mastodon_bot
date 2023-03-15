@@ -23,7 +23,6 @@ import ithome_updates_mastodon_bot.helpers.LoggerHelper
 import ithome_updates_mastodon_bot.singleton.HttpClientSingleton
 import org.http4k.core.Method
 import org.http4k.core.Request
-import org.unbescape.html.HtmlEscape
 import org.w3c.dom.Document
 import org.w3c.dom.Node
 import org.w3c.dom.NodeList
@@ -44,12 +43,6 @@ class RssFeeds(rssFeedsUrl: String) : LoggerHelper {
     private val documentBuilderFactory: DocumentBuilderFactory = DocumentBuilderFactory.newInstance()
     private val xPath: XPath = XPathFactory.newInstance().newXPath()
 
-    enum class PostStatus(val status: Int) {
-        QUEUED(0),
-        DONE(1),
-        FAILED(2)
-    }
-
     init {
         documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true)
         val documentBuilder = documentBuilderFactory.newDocumentBuilder()
@@ -61,49 +54,20 @@ class RssFeeds(rssFeedsUrl: String) : LoggerHelper {
         return bodyString
     }
 
-    fun items(): NodeList {
-        return document.getElementsByTagName("item")
-    }
-
-    fun title(): String {
-        val titleXPath = "//channel/title"
-        val titleNode: Node = xPath.compile(titleXPath).evaluate(document, XPathConstants.NODE) as Node
-        return titleNode.textContent.trim()
-    }
-
-    private fun saveItem(item: RssFeedsItem, sqliteDb: SqliteDb) {
-        val preparedStatement = sqliteDb.connection.prepareStatement(
-            """
-            INSERT OR IGNORE INTO rss_feeds_items (channel, title, description, link, guid, post_status)
-                VALUES(?, ?, ?, ?, ?, ?)
-        """.trimIndent()
-        )
-
-        preparedStatement.apply {
-            this.setString(1, title())
-            this.setString(2, item.title().let { HtmlEscape.unescapeHtml(it) })
-            this.setString(3, item.description().let { HtmlEscape.unescapeHtml(it) })
-            this.setString(4, item.link())
-            this.setString(5, item.guid())
-            this.setInt(6, PostStatus.QUEUED.status)
+    val items: NodeList
+        get() {
+            return document.getElementsByTagName("item")
         }
-        preparedStatement.executeUpdate()
-        preparedStatement.close()
-    }
 
-    fun updateDb(dbFilename: String = "rssfeeds.db") {
-        val sqliteDb = SqliteDb(dbFilename)
-
-        try {
-            repeat(this.items().length) { entry ->
-                val itemNode: Node = this.items().item(entry)
-                val item = RssFeedsItem(itemNode)
-                saveItem(item, sqliteDb)
-            }
-        } catch (e: Exception) {
-            logger.error(e.message)
-        } finally {
-            sqliteDb.close()
+    val channel: String
+        get() {
+            val titleXPath = "//channel/title"
+            val titleNode: Node = xPath.compile(titleXPath).evaluate(document, XPathConstants.NODE) as Node
+            return titleNode.textContent.trim()
         }
+
+    fun updateRepository(dbFilename: String = "rssfeeds.db") {
+        val rssFeedsRepository = RssFeedsRepository(dbFilename)
+        rssFeedsRepository.update(this.channel, this.items)
     }
 }
