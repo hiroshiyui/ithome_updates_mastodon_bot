@@ -63,7 +63,8 @@ class App : LoggerHelper, ConfigHelper {
     private fun registerScheduleUpdateRssFeedsDbJob(rssFeedsUrl: String, identity: String) {
         val updateRssFeedsDbJob: JobDetail = JobBuilder.newJob(UpdateRssFeedsDbJob::class.java)
             .withIdentity("updateRssFeedsDbJob_${identity}", defaultSchedulerGroup)
-            .usingJobData("rssFeedsUrl", rssFeedsUrl).build()
+            .usingJobData("rssFeedsUrl", rssFeedsUrl)
+            .build()
         val updateRssFeedsDbJobTrigger: Trigger =
             TriggerBuilder.newTrigger().withIdentity("updateRssFeedsDbJobTrigger_${identity}", defaultSchedulerGroup)
                 .withSchedule(
