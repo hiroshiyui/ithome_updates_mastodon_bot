@@ -73,11 +73,6 @@ class App : LoggerHelper, ConfigHelper {
         logger.info("Registering scheduled job 'updateRssFeedsDbJob_${identity}'")
         scheduler.scheduleJob(updateRssFeedsDbJob, updateRssFeedsDbJobTrigger)
     }
-
-    val greeting: String
-        get() {
-            return "Hello World!"
-        }
 }
 
 fun main() {
@@ -85,7 +80,6 @@ fun main() {
 
     app.let {
         it.logger.info("Starting ithome_updates_mastodon_bot...")
-        println(it.greeting)
         it.loadRssFeeds()
     }
 }
