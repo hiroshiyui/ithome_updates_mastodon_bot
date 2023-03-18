@@ -18,6 +18,7 @@
 
 package ithome_updates_mastodon_bot
 
+import ithome_updates_mastodon_bot.doubles.MastodonMockServer
 import ithome_updates_mastodon_bot.helpers.ConfigHelper
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -30,5 +31,15 @@ class MastodonInstanceClientTest : ConfigHelper {
         assertEquals(defaultInstanceUrl, classUnderTest.instanceUrl)
         val customizedClassUnderTest = MastodonInstanceClient("https://example.com")
         assertEquals("https://example.com", customizedClassUnderTest.instanceUrl)
+    }
+
+    @Test
+    fun postToMockServerShouldBeOk() {
+        val mockServer = MastodonMockServer()
+        val classUnderTest = MastodonInstanceClient("http://localhost:5566")
+        val rssFeedsRepository = RssFeedsRepository()
+        val item = rssFeedsRepository.randomPendingItem()
+        assert(classUnderTest.postToInstance(item))
+        mockServer.close()
     }
 }
