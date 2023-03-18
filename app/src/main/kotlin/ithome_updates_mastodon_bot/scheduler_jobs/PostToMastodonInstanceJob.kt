@@ -18,18 +18,15 @@
 
 package ithome_updates_mastodon_bot.scheduler_jobs
 
+import ithome_updates_mastodon_bot.MastodonInstanceClient
 import ithome_updates_mastodon_bot.RssFeedsRepository
 import ithome_updates_mastodon_bot.helpers.ConfigHelper
 import ithome_updates_mastodon_bot.helpers.LoggerHelper
-import ithome_updates_mastodon_bot.singleton.HttpClientSingleton
-import org.http4k.core.Method
-import org.http4k.core.Request
-import org.http4k.core.body.form
 import org.quartz.Job
 import org.quartz.JobExecutionContext
 
 class PostToMastodonInstanceJob : Job, LoggerHelper, ConfigHelper {
-    private val client = HttpClientSingleton.client
+    private val mastodonInstanceClient = MastodonInstanceClient()
 
     override fun execute(context: JobExecutionContext) {
         logger.info("Running PostToMastodonInstanceJob...")
@@ -37,7 +34,7 @@ class PostToMastodonInstanceJob : Job, LoggerHelper, ConfigHelper {
             val rssFeedsRepository = RssFeedsRepository()
             val item = rssFeedsRepository.randomPendingItem()
             if (item.title.isNotEmpty()) {
-                val postResult: Boolean = postToMastodonInstance(item)
+                val postResult: Boolean = mastodonInstanceClient.postToInstance(item)
                 if (postResult) {
                     rssFeedsRepository.updateItemAsStatusToDb(item, RssFeedsRepository.PostStatus.DONE)
                 } else {
@@ -47,22 +44,5 @@ class PostToMastodonInstanceJob : Job, LoggerHelper, ConfigHelper {
         } catch (e: Exception) {
             logger.error(e.message)
         }
-    }
-
-    private fun postToMastodonInstance(item: RssFeedsRepository.Item): Boolean {
-        val postStatusApiEndpoint = "${config.getString("mastodon.instance-url")}/api/v1/statuses"
-        val statusContent =
-            "〈${item.title}〉\n\n${item.description}\n${item.link}".trim()
-        val request = Request(Method.POST, postStatusApiEndpoint)
-            .header("Content-Type", "multipart/form-data")
-            .header(
-                "Authorization",
-                "Bearer ${config.getString("mastodon.access-token")}"
-            )
-            .form("status", statusContent)
-
-        val requestCall = client(request)
-
-        return requestCall.status.successful
     }
 }
