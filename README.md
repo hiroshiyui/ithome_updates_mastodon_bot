@@ -1,6 +1,6 @@
 # ithome_updates_mastodon_bot
 
-將 [iThome](https://www.ithome.com.tw/) 內容更新自動發送至 Mastodon
+將 [iThome](https://www.ithome.com.tw/) 內容更新 RSS feeds 自動發送至 Mastodon
 
 Follow me @ https://g0v.social/@unofficial_ithome
 
